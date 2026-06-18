@@ -40,6 +40,7 @@ Regole:
   ESEMPIO CORRETTO per "i vegetariani sono carenti di tiamina":
     ["thiamine", "deficiency", "vegetarian", "diet"]
   ESEMPIO SBAGLIATO (frasi, non usare): ["thiamine deficiency in vegetarians", "vegetarian diet B1"]
+- GENERA ANCHE termini MeSH ufficiali (campo "mesh_terms_en"): 2-4 heading dal thesaurus MeSH/PubMed (forma canonica esatta, es. "Fractures, Bone" non "Bone Fractures"; "Diabetes Mellitus, Type 2"). Esempi: vitamin D claim -> ["Vitamin D", "Fractures", "Aged"]; vegetarian B1 -> ["Thiamine Deficiency", "Diet, Vegetarian"]. Se non sei sicuro che esista, ometti.
 
 CLASSIFICAZIONE PER TIPO (campo "tipo"):
 Distingui due categorie di claim:
@@ -79,7 +80,8 @@ Rispondi ESCLUSIVAMENTE con JSON valido, senza testo prima o dopo, senza backtic
       "claim_it": "affermazione riformulata in italiano, neutra",
       "tipo": "clinica" oppure "biochimica_base",
       "centralita": 3,
-      "search_terms_en": ["keyword1", "keyword2", "keyword3", "keyword4"]
+      "search_terms_en": ["keyword1", "keyword2", "keyword3", "keyword4"],
+      "mesh_terms_en": ["MeSH Heading 1", "MeSH Heading 2"]
     }
   ]
 }
