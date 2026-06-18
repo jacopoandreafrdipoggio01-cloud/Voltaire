@@ -194,3 +194,27 @@ def detect_patterns(message_text: str, verdetti_riassunto: str, model: str) -> l
     except Exception as exc:
         print(f"[pattern] errore, salto: {exc}")
         return []
+
+
+def validate_mechanism(claim_it: str, meccanismo: str, model: str) -> dict:
+    """
+    Valida se il meccanismo biochimico descritto è realmente corretto.
+    Restituisce {'valido': bool, 'spiegazione': str}
+    """
+    from . import prompts
+    
+    user = prompts.build_mechanism_validate_prompt(claim_it, meccanismo)
+    raw = _call(prompts.MECHANISM_VALIDATE_SYSTEM, user, model, max_tokens=500)
+    
+    try:
+        import json
+        # Rimuovi backtick markdown se presenti
+        raw = raw.replace("```json", "").replace("```", "").strip()
+        result = json.loads(raw)
+        return {
+            "valido": result.get("meccanismo_valido", False),
+            "spiegazione": result.get("spiegazione", "")
+        }
+    except Exception as e:
+        print(f"[analyze] Errore parsing: {e}, raw={raw[:100]}")
+        return {"valido": False, "spiegazione": "Errore parsing validazione"}

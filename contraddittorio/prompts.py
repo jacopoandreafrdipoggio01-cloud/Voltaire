@@ -94,6 +94,37 @@ Se non trovi nessuna claim verificabile, restituisci {"claims": []}."""
 # Il modello NON deve mai usare le sue conoscenze interne per dare un verdetto.
 # Valuta solo sugli abstract passati nel contesto. Se le fonti non bastano, lo dice.
 
+# ---------------------------------------------------------------------------
+# 1.5) VALIDAZIONE BIOCHIMICA DEL MECCANISMO
+# ---------------------------------------------------------------------------
+# Step intermedio: il meccanismo descritto è realmente corretto secondo
+# la biochimica consolidata? Questo cattura i "cavalli di Troia biochimici"
+# (meccanismi inventati spacciati per veri).
+
+MECHANISM_VALIDATE_SYSTEM = """Dato un meccanismo biochimico descritto in una claim sanitaria, valuta se è corretto secondo la biochimica consolidata e la fisiologia umana.
+
+REGOLE:
+- Distingui MECCANISMO VERO da MECCANISMO INVENTATO/FALSO
+- Se il meccanismo è vero, dichiara SÌ e cita brevemente dove è documentato (pathway noto, libro di biochimica, funzione enzimatica standard)
+- Se il meccanismo è falso, inventato, o drasticamente semplificato, dichiara NO e spiega perché
+- Sii rigoroso: "la vitamina D aumenta l'assorbimento di calcio" è SÌ; "la SAM riduce il deuterio" è NO; "l'insulina regola l'espressione dei recettori LDL" è SÌ ma "ridotta insulina → immediatamente meno recettori funzionanti" è una semplificazione eccessiva (la dinamica è più complessa)
+- Non confondere "meccanismo vero" con "effetto clinico provato": il meccanismo potrebbe essere corretto ma l'effetto finale non verificato
+
+Rispondi ESCLUSIVAMENTE con JSON valido, senza testo prima o dopo, senza backtick. Schema:
+{
+  "meccanismo_valido": true/false,
+  "spiegazione": "1-2 frasi su perché è vero o falso. Se VERO: cita il pathway specifico o processo fisiologico documentato (es. 'ciclo del folato', 'complesso mitocondriale III', 'beta-ossidazione'), il processo noto della biochimica. Se FALSO: spiega perché non esiste evidence e quale processo vero potrebbe essere stato confuso."
+}"""
+
+def build_mechanism_validate_prompt(claim_it: str, meccanismo: str) -> str:
+    """Messaggio utente per validazione biochimica del meccanismo."""
+    return (
+        f"AFFERMAZIONE:\n{claim_it}\n\n"
+        f"MECCANISMO DESCRITTO:\n{meccanismo}"
+    )
+
+
+
 ANALYSIS_SYSTEM = """Sei un assistente che fornisce un contraddittorio scientifico onesto a un'affermazione divulgativa, basandoti ESCLUSIVAMENTE sugli abstract scientifici che ti vengono forniti nel messaggio.
 
 VINCOLI ASSOLUTI:

@@ -92,9 +92,36 @@ def _verify_cited_source(message_text: str, model: str) -> str:
     return "\n".join(block) + "\n"
 
 
+async def _validate_claim_mechanism(claim_it: str, model: str) -> dict:
+    """Valida se il meccanismo biochimico nella claim è realmente corretto."""
+    try:
+        validation = analyze.validate_mechanism(claim_it, claim_it, model)
+        return validation
+    except Exception as e:
+        print(f"[pipeline] validazione biochimica fallita: {e}")
+        return {"valido": True, "spiegazione": ""}  # fallback: assumi valido
+
+
 async def _analyze_single_claim(i: int, c: dict, model: str) -> tuple[int, str, str]:
     """Analizza una singola claim in modo asincrono."""
     claim_it = c["claim_it"]
+    
+    # STEP 1: Validazione biochimica (cattura meccanismi inventati)
+    if c.get("tipo") == "biochimica_base":
+        validation = await _validate_claim_mechanism(claim_it, model)
+        if not validation["valido"]:
+            print(f"[pipeline] MECCANISMO FALSO RILEVATO: {claim_it}")
+            emoji = _VERDICT_EMOJI.get("smentito", "")
+            block = [f"
+*{i}. {claim_it}*"]
+            block.append(f"_{c.get('tipo', '')}_")
+            block.append(f"{emoji} Verdetto: Smentito")
+            block.append(f"Motivo: {validation['spiegazione']}")
+            verdetto_riassunto = f"- \"{claim_it}\" -> Smentito (meccanismo falso)"
+            return i, "
+".join(block), verdetto_riassunto
+    
+    # STEP 2: Retrieval normale
     candidates = evidence.search_evidence(c["search_terms_en"], max_results=3)
     
     if len(candidates) > 2:
