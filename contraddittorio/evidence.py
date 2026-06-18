@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import logging
 import httpx
+import requests
 
 log = logging.getLogger(__name__)
 
@@ -190,6 +191,28 @@ def _progressive_search(terms: list[str], extra_clause: str, max_results: int,
             print(f"[evidence] 0 risultati con i {n} termini piu' rari, riprovo")
 
     return [], terms
+
+
+
+def get_open_access_url(doi: str) -> str:
+    """Cerca il paper su Unpaywall e ritorna l'URL del PDF open access se disponibile."""
+    if not doi:
+        return None
+    try:
+        resp = requests.get(
+            f"https://api.unpaywall.org/v2/{doi}",
+            params={"email": "voltaire@fact-checking.local"},
+            timeout=5
+        )
+        if resp.status_code == 200:
+            data = resp.json()
+            # Cerca la versione open access migliore
+            best_oa = data.get("best_oa_location")
+            if best_oa and best_oa.get("url_for_pdf"):
+                return best_oa["url_for_pdf"]
+    except Exception as e:
+        print(f"[evidence] Unpaywall error: {e}")
+    return None
 
 
 def search_evidence(search_terms: list[str], max_results: int = 4,

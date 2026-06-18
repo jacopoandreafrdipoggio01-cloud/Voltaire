@@ -78,7 +78,7 @@ def _verify_cited_source(message_text: str, model: str) -> str:
     titolo = article.get("title", "N/D")
     titolo_link = f"[{titolo}]({link})" if link else titolo
 
-    icon = "\u2705" if cmp["fedele"] else "\u274c"
+    icon = "✅" if cmp["fedele"] else "❌"
     block = ["*Verifica della fonte citata*",
              f"Fonte reale: {titolo_link} ({article.get('year','s.d.')})"]
     if cmp["corrispondenza"] == "approssimativa":
@@ -99,7 +99,7 @@ async def _validate_claim_mechanism(claim_it: str, model: str) -> dict:
         return validation
     except Exception as e:
         print(f"[pipeline] validazione biochimica fallita: {e}")
-        return {"valido": True, "spiegazione": ""}  # fallback: assumi valido
+        return {"valido": True, "spiegazione": ""}
 
 
 async def _analyze_single_claim(i: int, c: dict, model: str) -> tuple[int, str, str]:
@@ -112,14 +112,12 @@ async def _analyze_single_claim(i: int, c: dict, model: str) -> tuple[int, str, 
         if not validation["valido"]:
             print(f"[pipeline] MECCANISMO FALSO RILEVATO: {claim_it}")
             emoji = _VERDICT_EMOJI.get("smentito", "")
-            block = [f"
-*{i}. {claim_it}*"]
+            block = [f"\n*{i}. {claim_it}*"]
             block.append(f"_{c.get('tipo', '')}_")
             block.append(f"{emoji} Verdetto: Smentito")
             block.append(f"Motivo: {validation['spiegazione']}")
             verdetto_riassunto = f"- \"{claim_it}\" -> Smentito (meccanismo falso)"
-            return i, "
-".join(block), verdetto_riassunto
+            return i, "\n".join(block), verdetto_riassunto
     
     # STEP 2: Retrieval normale
     candidates = evidence.search_evidence(c["search_terms_en"], max_results=3)
@@ -212,7 +210,7 @@ def analyze_message(message_text: str, model: str, max_claims: int = 3) -> str:
                   "Lo scetticismo e' sano: ecco i passaggi che rendono questo messaggio "
                   "persuasivo e su cui vale la pena fermarsi a riflettere."]
         for p in patterns:
-            pblock.append(f"\u2022 _{p['nome']}_: {p['come']}")
+            pblock.append(f"• _{p['nome']}_: {p['come']}")
         blocks.append("\n".join(pblock))
     
     blocks.append(
