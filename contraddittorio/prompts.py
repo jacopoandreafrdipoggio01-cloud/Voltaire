@@ -73,7 +73,7 @@ concentrare l'analisi. Se un testo contiene solo claim "biochimica_base" senza n
 clinica/causale a valle, estraile comunque (potrebbero comunque essere usate impropriamente), ma
 segnalale como tali.
 
-Rispondi ESCLUSIVAMENTE con JSON valido, senza testo prima o dopo, senza backtick markdown. Schema:
+Rispondi ESCLUSIVAMENTE con JSON valido, senza testo prima o dopo, senza backtick markdown. OBBLIGATORIO: ogni claim DEVE contenere ENTRAMBI i campi search_terms_en E mesh_terms_en. Schema:
 {
   "claims": [
     {
@@ -85,6 +85,7 @@ Rispondi ESCLUSIVAMENTE con JSON valido, senza testo prima o dopo, senza backtic
     }
   ]
 }
+Se non trovi MeSH terms appropriati per una claim, restituisci un array vuoto [] invece di omettere il campo.
 Se non trovi nessuna claim verificabile, restituisci {"claims": []}."""
 
 

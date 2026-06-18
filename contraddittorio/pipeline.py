@@ -119,8 +119,9 @@ async def _analyze_single_claim(i: int, c: dict, model: str) -> tuple[int, str, 
             verdetto_riassunto = f"- \"{claim_it}\" -> Smentito (meccanismo falso)"
             return i, "\n".join(block), verdetto_riassunto
     
-    # STEP 2: Retrieval normale
-    candidates = evidence.search_evidence(c["search_terms_en"], max_results=3)
+    # STEP 2: Retrieval normale (con MeSH se disponibile)
+    mesh_terms = c.get("mesh_terms_en", [])
+    candidates = evidence.search_evidence(c["search_terms_en"], mesh_terms=mesh_terms, max_results=3)
     
     if len(candidates) > 2:
         abstracts = analyze.rerank_candidates(claim_it, candidates, model)[:4]
